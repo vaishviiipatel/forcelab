@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Rajdhani";
+  src: url("./assets/fonts/Rajdhani-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rajdhani";
+  src: url("./assets/fonts/Rajdhani-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("./assets/fonts/JetBrainsMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-rajdhani: "Rajdhani", sans-serif;
+  --font-jetbrains: "JetBrains Mono", monospace;
+  
+  --laser-color-1: transparent;
+  --laser-color-2: transparent;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-border: rgba(255, 255, 255, 0.25);
+}
+
+.font-rajdhani {
+  font-family: var(--font-rajdhani);
+}
+
+.font-jetbrains {
+  font-family: var(--font-jetbrains);
+}
+
+@keyframes liquidOne {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(180px, 80px) scale(1.15); }
+  100% { transform: translate(40px, 180px) scale(0.95); }
+}
+
+@keyframes liquidTwo {
+  0% { transform: translate(40px, 20px) scale(1); }
+  50% { transform: translate(-180px, -80px) scale(1.2); }
+  100% { transform: translate(-80px, 150px) scale(1.05); }
+}
+
+@keyframes liquidThree {
+  0% { transform: translate(0, 40px) scale(1); }
+  50% { transform: translate(150px, -100px) scale(1.2); }
+  100% { transform: translate(-100px, -40px) scale(1.05); }
+}
+
+@keyframes borderRotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes globalSpin {
+  to { transform: rotate(360deg); }
+}
+
+@layer utilities {
+  .animate-liquid-one {
+    animation: liquidOne 20s ease-in-out infinite alternate;
+  }
+  .animate-liquid-two {
+    animation: liquidTwo 24s ease-in-out infinite alternate;
+  }
+  .animate-liquid-three {
+    animation: liquidThree 28s ease-in-out infinite alternate;
+  }
+}
+
+.animated-border {
+  position: relative;
+  display: inline-block;
+  padding: 2px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.animated-border::before {
+  content: "";
+  position: absolute;
+  inset: -150%;
+  z-index: -2;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 60%,
+    #5adfff 80%,
+    #110b4d 95%,
+    transparent 100%
+  );
+  animation: borderRotate 4s linear infinite;
+}
+
+.animated-border::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  background: #0b0f19;
+  border-radius: inherit;
+}
+
+.animated-border > * {
+  position: relative;
+  z-index: 1;
+}
+
+.animated-border-card {
+  position: relative;
+  width: 100%;
+  padding: 2px; 
+  overflow: hidden;
+  border-radius: 28px;
+  isolation: isolate;
+  transition: transform 200ms ease;
+}
+
+.animated-border-card::before {
+  content: "";
+  position: absolute;
+  inset: -150%;
+  z-index: -2;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 75%,
+    var(--laser-color-1) 90%,
+    var(--laser-color-2) 98%,
+    transparent 100%
+  );
+  animation: borderRotate 4s linear infinite;
+}
+
+.animated-border-card::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: inherit;
+}
+
+.animated-border-card:hover {
+  --laser-color-1: rgba(255, 255, 255, 0.8);
+  --laser-color-2: rgba(90, 223, 255, 0.6);
+  --card-bg: #030914;
+  --card-border: transparent;
+}
+
+.spin-slow { 
+  animation: globalSpin 70s linear infinite; 
+}
+
+.spin-slower { 
+  animation: globalSpin 120s linear infinite reverse; 
+}
+
+.atom-spin {
+  animation: globalSpin 30s linear infinite;
+  transform-origin: 50px 50px;
+}
+
+.will-change-transform {
+  will-change: transform;
+}
+
+.group-hover\:pause-spin:hover,
+.group:hover .group-hover\:pause-spin {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow, 
+  .spin-slower, 
+  .atom-spin { 
+    animation: none; 
+  }
+}

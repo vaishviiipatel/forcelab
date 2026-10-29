@@ -1,0 +1,89 @@
+const express = require('express');
+const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+
+const webApp = express();
+webApp.use(express.json());
+webApp.use(cors());
+
+const dbConnection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'forcelab_db'
+});
+
+dbConnection.connect((connectionError) => {
+    if (connectionError) {
+        console.error('Failed to link database: ' + connectionError.stack);
+        return;
+    }
+    console.log('Database synced properly.');
+});
+
+webApp.post('/api/signup', async (request, response) => {
+    const { username, email, password } = request.body;
+    
+    if (!username || !email || !password) {
+        return response.status(400).json({ error: 'Missing parameters.' });
+    }
+
+    try {
+        const costFactor = 10;
+        const securePasswordHash = await bcrypt.hash(password, costFactor);
+
+        const databaseQuery = 'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)';
+        dbConnection.query(databaseQuery, [username, email, securePasswordHash], (dbError, databaseResult) => {
+            if (dbError) {
+                if (dbError.code === 'ER_DUP_ENTRY') {
+                    return response.status(400).json({ error: 'This email is already in use.' });
+                }
+                return response.status(500).json({ error: 'Storage failure.' });
+            }
+            response.status(201).json({ message: 'Profile initialized.' });
+        });
+    } catch (processError) {
+        response.status(500).json({ error: 'Password processing error.' });
+    }
+});
+webApp.post('/api/login', (request, response) => {
+    const { email, password } = request.body;
+
+    if (!email || !password) {
+        return response.status(400).json({ error: 'Both fields are required.' });
+    }
+
+    const verificationQuery = 'SELECT * FROM users WHERE email = ?';
+    dbConnection.query(verificationQuery, [email], async (dbError, recordMatches) => {
+        if (dbError) return response.status(500).json({ error: 'Database request failed.' });
+        if (recordMatches.length === 0) return response.status(400).json({ error: 'No user record found.' });
+
+        const matchingProfile = recordMatches[0];
+
+        const credentialsMatch = await bcrypt.compare(password, matchingProfile.password_hash);
+        if (!credentialsMatch) return response.status(400).json({ error: 'Incorrect credentials.' });
+
+        const sessionToken = jwt.sign(
+            { id: matchingProfile.id, username: matchingProfile.username }, 
+            'FORCELAB_SECRET_KEY', 
+            { expiresIn: '24h' }
+        );
+
+        response.json({
+            message: 'Access granted.',
+            token: sessionToken,
+            user: { 
+                id: matchingProfile.id, 
+                username: matchingProfile.username, 
+                email: matchingProfile.email 
+            }
+        });
+    });
+});
+
+const APP_PORT = 5000;
+webApp.listen(APP_PORT, () => {
+    console.log(`Backend online on port ${APP_PORT}`);
+});
