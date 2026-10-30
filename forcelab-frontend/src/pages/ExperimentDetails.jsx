@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import PageShell from '../components/PageShell'
-import Header from '../components/Header'
-import { getExperiments } from '../services/experiments'
-import { GAME_VARIABLES, toLabel } from '../utils/gameVariables'
-import { gameTitle } from '../data/games'
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import PageShell from '../components/PageShell';
+import Header from '../components/Header';
+import { getExperiments } from '../services/experiments';
+import { GAME_VARIABLES, toLabel } from '../utils/gameVariables';
+import { gameTitle } from '../data/games';
 
 const DetailRow = ({ label, value }) => (
   <div className="flex justify-between font-rajdhani text-lg text-white">
