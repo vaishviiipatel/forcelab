@@ -49,7 +49,7 @@ function AuthPage() {
 
       if (isLoginScreen) {
         // Secure access keys in browser session store
-        localStorage.setItem('token', data.token)
+        localStorage.setItem('sessionKey', data.token)
         localStorage.setItem('user', JSON.stringify(data.user))
         setAlertMsg('Access granted! Redirecting...')
         setTimeout(() => routerNav('/'), 1200)
