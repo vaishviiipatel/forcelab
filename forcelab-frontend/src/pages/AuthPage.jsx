@@ -1,4 +1,37 @@
-  return (
+ 
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+function AuthPage() {
+  const routerNav = useNavigate()
+
+  const [isLoginScreen, setIsLoginScreen] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [alertMsg, setAlertMsg] = useState('')
+
+  const [clearanceData, setClearanceData] = useState({
+    username: '',
+    email: '',
+    password: '',
+  })
+
+  const handleFieldChange = (e) => {
+    setClearanceData({
+      ...clearanceData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault()
+    setAlertMsg('Authentication backend is not connected yet.')
+  }
+
+  
+}
+
+export default AuthPage
+ return (
     <div className="relative min-h-screen bg-[#020b16] text-white flex items-center justify-center p-6 overflow-hidden font-rajdhani">
       <div 
         className="absolute w-[500px] h-[500px] rounded-full opacity-10 blur-3xl pointer-events-none"
