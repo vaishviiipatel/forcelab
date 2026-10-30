@@ -1,4 +1,5 @@
-const SERVICES_URL = 'http://localhost:5000/services/experiments';
+const BACKEND_BASE = import.meta.env.VITE_API_URL || 'https://onrender.com';
+const SERVICES_URL = `${BACKEND_BASE}/services/experiments`;
 
 const parse = (v) => {
   if (typeof v === 'string') {
