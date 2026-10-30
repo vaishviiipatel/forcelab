@@ -2,27 +2,27 @@ import { useNavigate } from 'react-router-dom'
 import OrbitField from '../components/OrbitField'
 
 const FEATURES = [
-  { 
-    n: 1, 
-    title: 'Physics Engine', 
+  {
+    n: 1,
+    title: 'Physics Engine',
     speed: 'spin-slow',
     desc: 'Experience realistic gravity, force, friction, and collisions powered by Matter.js.'
   },
-  { 
-    n: 2, 
-    title: 'Puzzle Challenges', 
+  {
+    n: 2,
+    title: 'Puzzle Challenges',
     speed: 'spin-slower',
     desc: 'Complete unique levels that require logic, timing, and physics.'
   },
-  { 
-    n: 3, 
-    title: 'XP & Achievements', 
+  {
+    n: 3,
+    title: 'XP & Achievements',
     speed: 'spin-slow',
     desc: 'Earn stars, unlock badges, and level up your progress.'
   },
-  { 
-    n: 4, 
-    title: 'Learn While Playing', 
+  {
+    n: 4,
+    title: 'Learn While Playing',
     speed: 'spin-slower',
     desc: 'Every completed level is followed by a quick concept check to reinforce learning.'
   },
@@ -88,9 +88,9 @@ function LandingPage() {
     <div className="relative min-h-screen bg-[#020b16] text-white overflow-x-hidden">
 
       <header className="relative z-20 max-w-6xl mx-auto px-8 pt-8 flex items-center justify-between">
-        <button 
-          onClick={() => navigate('/')} 
-          className="flex items-center justify-center font-rajdhani font-bold text-2xl text-white cursor-pointer select-none" 
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center justify-center font-rajdhani font-bold text-2xl text-white cursor-pointer select-none"
           aria-label="ForceLab home"
         >
           <span>F</span>
@@ -99,7 +99,7 @@ function LandingPage() {
           </span>
           <span className="tracking-[0.2em] -ml-0.5">RCELAB</span>
         </button>
-        
+
         <div className="flex gap-4">
           <button onClick={() => navigate('/games')} className="font-jetbrains font-bold text-xs text-white border border-white/70 rounded-lg px-5 py-2 hover:bg-white/10 transition cursor-pointer">
             Login
@@ -110,19 +110,25 @@ function LandingPage() {
         </div>
       </header>
 
-      <section className="relative -mt-16 h-[640px] flex items-center justify-center" style={{ background: 'radial-gradient(ellipse 55% 60% at 50% 48%, rgba(170,178,188,0.20) 0%, rgba(60,75,92,0.10) 38%, rgba(2,11,22,0) 72%)' }}>
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
+      <section
+        className="relative -mt-16 h-[640px] flex items-center justify-center"
+        style={{
+          background:
+            'radial-gradient(ellipse 55% 60% at 50% 48%, rgba(170,178,188,0.55) 0%, rgba(60,75,92,0.35) 38%, rgba(2,11,22,0) 72%)',
+        }}
+      >
+        <div className="absolute inset-0 z-0 pointer-events-none">
           <OrbitField />
         </div>
-        
+
         <div className="relative z-10 text-center px-6 max-w-2xl mt-12">
           <h1 className="font-rajdhani font-semibold text-4xl sm:text-5xl text-white tracking-wide">Master Physics Through Play.</h1>
-          <p className="font-jetbrains text-xs sm:text-sm text-gray-300 mt-6 leading-relaxed max-w-xl mx-auto">
+          <p className="font-jetbrains text-xs sm:text-sm text-gray-200 mt-6 leading-relaxed max-w-xl mx-auto">
             Solve interactive physics puzzles using force, gravity, momentum, and motion. Every challenge tests your thinking, and every solution teaches a real concept.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-5">
-            <button onClick={() => navigate('/games')} className="font-jetbrains font-bold text-xs text-white bg-white/10 border border-white/30 rounded-xl px-10 py-3.5 backdrop-blur-md hover:bg-white/20 transition cursor-pointer">Play Now</button>
-            <button onClick={() => navigate('/games')} className="font-jetbrains font-bold text-xs text-white border border-white/40 rounded-xl px-10 py-3.5 backdrop-blur-md hover:bg-white/10 transition cursor-pointer">Explore Games</button>
+            <button onClick={() => navigate('/games')} className="font-jetbrains font-bold text-xs text-white bg-white/20 border border-white/40 rounded-xl px-10 py-3.5 backdrop-blur-md hover:bg-white/30 transition cursor-pointer">Play Now</button>
+            <button onClick={() => navigate('/games')} className="font-jetbrains font-bold text-xs text-white border border-white/50 rounded-xl px-10 py-3.5 backdrop-blur-md hover:bg-white/10 transition cursor-pointer">Explore Games</button>
           </div>
         </div>
       </section>
@@ -139,7 +145,6 @@ function LandingPage() {
               className="group h-[380px] w-full cursor-pointer [perspective:1000px]"
             >
               <div className="relative h-full w-full rounded-2xl [transform-style:preserve-3d] transition-transform duration-700 ease-in-out group-hover:[transform:rotateY(180deg)]">
-
 
                 <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white/20 bg-[#04101d] [backface-visibility:hidden]">
                   <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-60 transition-opacity duration-300">
@@ -194,7 +199,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* why */}
       <section className="max-w-6xl mx-auto px-8 mt-24">
         <h2 className="font-rajdhani font-semibold text-3xl">Why ForceLab?</h2>
         <h3 className="font-rajdhani text-xl text-gray-200 mt-4">Built for Curious Minds</h3>
@@ -203,8 +207,13 @@ function LandingPage() {
         </p>
       </section>
 
-
-      <section className="relative mt-24 py-24 text-center" style={{ background: 'radial-gradient(ellipse 40% 60% at 50% 55%, rgba(150,158,168,0.15) 0%, rgba(2,11,22,0) 70%)' }}>
+      <section
+        className="relative mt-24 py-24 text-center"
+        style={{
+          background:
+            'radial-gradient(ellipse 40% 60% at 50% 55%, rgba(150,158,168,0.35) 0%, rgba(2,11,22,0) 70%)',
+        }}
+      >
         <h2 className="font-rajdhani font-semibold text-3xl sm:text-4xl">Ready for Your First Mission?</h2>
         <p className="font-rajdhani text-xl text-gray-200 mt-8 max-w-sm mx-auto leading-snug">
           Enter the lab, solve physics puzzles, and discover how science works through play.
@@ -214,12 +223,15 @@ function LandingPage() {
         </button>
       </section>
 
-
       <footer className="max-w-6xl mx-auto px-8 pt-6 pb-12">
         <p className="font-rajdhani text-xl">ForceLab</p>
         <p className="font-rajdhani text-xl mt-6">Play. Experiment. Learn.</p>
 
-        <div className="mt-16 flex items-center justify-center font-rajdhani font-bold leading-none select-none" style={{ fontSize: 'clamp(56px, 14vw, 190px)', color: 'transparent', WebkitTextStroke: '3px rgba(70,120,150,0.35)' }} aria-label="ForceLab">
+        <div
+          className="mt-16 flex items-center justify-center font-rajdhani font-bold leading-none select-none"
+          style={{ fontSize: 'clamp(56px, 14vw, 190px)', color: 'transparent', WebkitTextStroke: '3px rgba(70,120,150,0.35)' }}
+          aria-label="ForceLab"
+        >
           <span>F</span>
           <span style={{ width: '1.05em', height: '1.05em', margin: '0 0.03em' }} className="inline-block relative">
             <Atom className="w-full h-full drop-shadow-[0_0_14px_rgba(90,223,255,0.4)]" />
