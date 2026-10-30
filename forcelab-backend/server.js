@@ -55,12 +55,13 @@ app.post('/api/login', (req, res) => {
     return res.status(400).json({ error: 'Both fields are required.' });
   }
 
-  const lookupProfileQuery = 'SELECT * FROM users WHERE email = ?';
-  labConnection.query(lookupProfileQuery, [email], async (dbError, recordMatches) => {
+  const lookupProfileQuery = 'SELECT * FROM users WHERE email = $1';
+  dbPool.query(lookupProfileQuery, [email], async (dbError, recordMatches) => {
     if (dbError) return res.status(500).json({ error: 'Database request failed.' });
-    if (recordMatches.length === 0) return res.status(400).json({ error: 'No user record found.' });
+    if (recordMatches.rows.length === 0) return res.status(400).json({ error: 'No user record found.' });
 
-    const matchingProfile = recordMatches[0];
+    // FIX: Pull the first matching profile object out of the rows array array!
+    const matchingProfile = recordMatches.rows[0];
 
     const credentialsMatch = await bcrypt.compare(password, matchingProfile.password_hash);
     if (!credentialsMatch) return res.status(400).json({ error: 'Incorrect credentials.' });
@@ -82,6 +83,7 @@ app.post('/api/login', (req, res) => {
     });
   });
 });
+
 app.get('/services/experiments', (req, res) => {
   labConnection.query('SELECT * FROM experiments ORDER BY createdAt DESC', (err, results) => {
     if (err) {
