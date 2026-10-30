@@ -32,11 +32,11 @@ function GamePreview() {
         <span className="mx-2 text-gray-600">›</span>
         <button onClick={() => navigate('/games')} className="hover:text-white transition cursor-pointer">Games</button>
         <span className="mx-2 text-gray-600">›</span>
-        <span className="text-white font-semibold">{game.title}</span>
+        <span className="text-white font-semibold">{game.title || 'Game'}</span>
       </p>
 
       <h2 className="font-rajdhani font-bold text-3xl text-white text-center mt-8">
-        {game.tagline}
+        {game.tagline || 'Explore Physics'}
       </h2>
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6 border border-white/30 bg-white/[0.04] backdrop-blur-md rounded-3xl p-6">
@@ -78,7 +78,7 @@ function GamePreview() {
                 Physics Concepts
               </h3>
               <ul className="mt-3 space-y-2">
-                {game.concepts.map((c) => (
+                {game?.concepts?.map((c) => (
                   <li
                     key={c}
                     className="font-rajdhani text-white text-center border border-white/20 rounded-lg py-1"
@@ -94,7 +94,7 @@ function GamePreview() {
                 Controls
               </h3>
               <ul className="mt-2 space-y-1.5">
-                {game.controls.map((c) => (
+                {game?.controls?.map((c) => (
                   <li
                     key={c}
                     className="font-rajdhani text-sm text-gray-200 text-center border border-white/15 rounded-lg py-1"
@@ -126,13 +126,13 @@ function GamePreview() {
       
       <h3 className="font-rajdhani font-bold text-3xl text-white text-center mt-12">About</h3>
       <p className="font-jetbrains text-sm text-gray-300 text-center max-w-2xl mx-auto mt-3 leading-relaxed">
-        {game.about}
+        {game.about || 'No information available.'}
       </p>
 
       <div className="mt-12 max-w-3xl mx-auto border border-white/10 bg-white/[0.02] backdrop-blur-xl rounded-2xl p-8 text-center shadow-2xl">
         <h3 className="font-rajdhani font-bold text-2xl text-white tracking-wide">Did You Know?</h3>
         <p className="font-jetbrains text-sm text-gray-400 mt-3 max-w-2xl mx-auto leading-relaxed">
-          {game.didYouKnow}
+          {game.didYouKnow || 'Physics mechanics run in real-time.'}
         </p>
       </div>
     </PageShell>
