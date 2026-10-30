@@ -60,6 +60,7 @@ app.post('/api/login', (req, res) => {
     if (dbError) return res.status(500).json({ error: 'Database request failed.' });
     if (recordMatches.rows.length === 0) return res.status(400).json({ error: 'No user record found.' });
 
+    // FIXED: Added [0] so it extracts the actual profile object perfectly!
     const matchingProfile = recordMatches.rows[0];
 
     const credentialsMatch = await bcrypt.compare(password, matchingProfile.password_hash);
@@ -82,6 +83,7 @@ app.post('/api/login', (req, res) => {
     });
   });
 });
+
 
 app.get('/services/experiments', (req, res) => {
   dbPool.query('SELECT * FROM experiments ORDER BY createdat DESC', (err, results) => {
