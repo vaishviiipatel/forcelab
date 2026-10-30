@@ -50,13 +50,13 @@ function GameSelection() {
         Every game uses real physics. Play normally, or enter Experiment Mode to customize physics settings and explore different outcomes.
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
         {GAMES.map((game) => (
           <GameCard
             key={game.id}
-            title={game.title}
-            image={game.image}
-            onOpen={() => navigate(`/game/${game.id}`)}
+            displayTitle={game.title}
+            previewAsset={game.image}
+            handleLaunch={() => navigate(`/game/${game.id}`)}
           />
         ))}
       </div>
