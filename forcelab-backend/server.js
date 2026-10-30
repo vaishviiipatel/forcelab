@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -8,16 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const labConnection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'forcelab_db',
+// Dynamic production connection database pooling
+const dbPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-labConnection.connect((connectionError) => {
-  if (connectionError) console.error('Database connection failed:', connectionError.message);
-  else console.log('Database synced properly.');
+dbPool.connect((err) => {
+  if (err) console.error('Cloud Database sync failed:', err.message);
+  else console.log('Database synced properly on operational engine.');
 });
 
 app.get('/', (req, res) => res.send('Operational engine active.'));
@@ -33,10 +32,11 @@ app.post('/api/signup', async (req, res) => {
     const costFactor = 10;
     const securePasswordHash = await bcrypt.hash(password, costFactor);
 
-    const checkDuplicateQuery = 'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)';
-    labConnection.query(checkDuplicateQuery, [username, email, securePasswordHash], (dbError, databaseResult) => {
+    const insertionQuery = 'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)';
+    dbPool.query(insertionQuery, [username, email, securePasswordHash], (dbError, result) => {
       if (dbError) {
-        if (dbError.code === 'ER_DUP_ENTRY') {
+        console.error("Signup Database Error details:", dbError.message);
+        if (dbError.code === '23505' || dbError.message.includes('unique constraint')) {
           return res.status(400).json({ error: 'This email is already in use.' });
         }
         return res.status(500).json({ error: 'Storage failure.' });
@@ -60,7 +60,6 @@ app.post('/api/login', (req, res) => {
     if (dbError) return res.status(500).json({ error: 'Database request failed.' });
     if (recordMatches.rows.length === 0) return res.status(400).json({ error: 'No user record found.' });
 
-    // FIX: Pull the first matching profile object out of the rows array array!
     const matchingProfile = recordMatches.rows[0];
 
     const credentialsMatch = await bcrypt.compare(password, matchingProfile.password_hash);
@@ -85,12 +84,12 @@ app.post('/api/login', (req, res) => {
 });
 
 app.get('/services/experiments', (req, res) => {
-  labConnection.query('SELECT * FROM experiments ORDER BY createdAt DESC', (err, results) => {
+  dbPool.query('SELECT * FROM experiments ORDER BY createdat DESC', (err, results) => {
     if (err) {
       console.error('Error fetching data from database:', err.message);
       return res.status(500).json({ error: 'Database read failed' });
     }
-    res.json(results);
+    res.json(results.rows);
   });
 });
 
@@ -98,18 +97,18 @@ app.post('/services/experiments', (req, res) => {
   const { name, note, gameId, settings, result, shot, score } = req.body;
   const cleanName = (name || '').trim() || 'Unnamed Experiment';
 
-  labConnection.query('SELECT id FROM experiments WHERE LOWER(name) = LOWER(?) LIMIT 1', [cleanName], (err, rows) => {
+  dbPool.query('SELECT id FROM experiments WHERE LOWER(name) = LOWER($1) LIMIT 1', [cleanName], (err, recordMatches) => {
     if (err) {
       console.error('Error checking name:', err.message);
       return res.status(500).json({ error: 'Database read failed' });
     }
-    if (rows.length > 0) return res.status(409).json({ error: 'duplicate' });
+    if (recordMatches.rows.length > 0) return res.status(409).json({ error: 'duplicate' });
 
-    const generatedId = Date.now();
-    const systemTimestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const generatedId = String(Date.now());
+    const systemTimestamp = new Date().toISOString();
     const databaseInsertionQuery = `
       INSERT INTO experiments (id, name, note, gameId, settings, result, score, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
     
     const configurationValues = [
@@ -123,7 +122,7 @@ app.post('/services/experiments', (req, res) => {
       systemTimestamp,
     ];
 
-    labConnection.query(databaseInsertionQuery, configurationValues, (insertionError) => {
+    dbPool.query(databaseInsertionQuery, configurationValues, (insertionError) => {
       if (insertionError) {
         console.error('Error inserting data into database table:', insertionError.message);
         return res.status(500).json({ error: 'Database save failed' });
@@ -133,7 +132,7 @@ app.post('/services/experiments', (req, res) => {
   });
 });
 
-const TARGET_PORT = 5000;
+const TARGET_PORT = process.env.PORT || 5000;
 app.listen(TARGET_PORT, () => {
   console.log(`Backend running on port ${TARGET_PORT}`);
 });
