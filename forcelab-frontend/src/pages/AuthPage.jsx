@@ -1,4 +1,3 @@
- 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -27,10 +26,6 @@ function AuthPage() {
     setAlertMsg('Authentication backend is not connected yet.')
   }
 
-  
-}
-
-export default AuthPage
  return (
     <div className="relative min-h-screen bg-[#020b16] text-white flex items-center justify-center p-6 overflow-hidden font-rajdhani">
       <div 
@@ -112,4 +107,5 @@ export default AuthPage
       </div>
     </div>
   )
-
+}
+export default AuthPage
