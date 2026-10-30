@@ -204,6 +204,8 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       const f = speed > 0 ? Math.max(0, speed - decel) / speed : 0
       Body.setVelocity(ball, { x: vx * f, y: vy * f })
     })
+
+    Events.on(engine, 'afterUpdate', () => {
       if (phase !== 'rolling') return
       const speed = Math.hypot(ball.velocity.x, ball.velocity.y)
       const d = Math.hypot(ball.position.x - hole.x, ball.position.y - hole.y)
@@ -222,12 +224,14 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
         y: (e.clientY - rect.top) * (HEIGHT / rect.height),
       }
     }
+
     const onMove = (e) => {
       if (experiment) return
       const m = toGame(e)
       const a = (Math.atan2(ball.position.y - m.y, m.x - ball.position.x) * 180) / Math.PI
       aimDir = (a + 360) % 360
     }
+
     const onDown = () => {
       if (phase !== 'aim') return
       if (experiment) {
@@ -237,11 +241,13 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
         chargeStart = performance.now()
       }
     }
+
     const onUp = () => {
       if (!charging) return
       charging = false
       strike(aimDir, Math.max(10, chargePct()))
     }
+
     render.canvas.addEventListener('mousemove', onMove)
     render.canvas.addEventListener('mousedown', onDown)
     window.addEventListener('mouseup', onUp)
@@ -327,7 +333,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       Engine.clear(engine)
       render.canvas.remove()
     }
-  } [round, experiment];
+  }, [round, experiment, autoRun])
 
   const handleTryAgain = () => {
     setResult(null)
@@ -393,6 +399,6 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       playHint="Move the mouse to aim, hold to charge, release to hit. Sink the ball and a new hole appears."
     />
   )
-
+}
 
 export default PrecisionGolfCanvas
