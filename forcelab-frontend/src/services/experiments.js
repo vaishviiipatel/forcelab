@@ -1,6 +1,4 @@
-// HARDCODED TO TALK TO THE LIVE ENGINE DIRECTLY 🌌
-const BACKEND_BASE = 'https://forcelab-79sc.onrender.com';
-const SERVICES_URL = `${BACKEND_BASE}/services/experiments`;
+const SERVICES_URL = 'http://localhost:5000/services/experiments';
 
 const parse = (v) => {
   if (typeof v === 'string') {

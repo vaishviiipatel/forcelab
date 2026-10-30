@@ -19,6 +19,7 @@ const CONTROLS = [
   { key: 'power', label: 'Launch Force', min: 0.08, max: 0.3, step: 0.01 },
 ]
 
+// pull position -> angle + force
 const describePull = (pos) => {
   const x = ANCHOR.x - pos.x
   const up = pos.y - ANCHOR.y
@@ -28,6 +29,7 @@ const describePull = (pos) => {
   }
 }
 
+// angle + force -> pull position (the reverse)
 const pullFromShot = ({ angle, force }) => {
   const d = (force / 100) * MAX_DRAG
   const rad = (angle * Math.PI) / 180
@@ -57,6 +59,7 @@ function VectorShotCanvas({ experiment = false, initialSettings, initialShot, au
   const launchSettingsRef = useRef(null)
   const streakRef = useRef(0)
 
+  // slider changes update the running physics (declared BEFORE the world effect)
   useEffect(() => {
     settingsRef.current = settings
     const { engine, ball, grip } = worldRef.current
@@ -108,6 +111,7 @@ function VectorShotCanvas({ experiment = false, initialSettings, initialShot, au
       render: { fillStyle: '#5adfff' },
     })
 
+    // Play: taller tower + new position as your streak grows. Experiment: fixed tower.
     const rows = experiment ? 3 : Math.min(5, 3 + Math.floor(streakRef.current / 2))
     const x0 = experiment ? 650 : 540 + Math.floor(Math.random() * 230)
     const groundTop = HEIGHT - 20
@@ -132,7 +136,7 @@ function VectorShotCanvas({ experiment = false, initialSettings, initialShot, au
     ])
     worldRef.current = { engine, ball, grip: [ground, ball, ...targets.map((t) => t.body)] }
 
-    let phase = 'aim'
+    let phase = 'aim' // aim -> flying -> done
     let dragging = false
     let holdPos = { ...ANCHOR }
     let launchTime = 0
@@ -160,7 +164,7 @@ function VectorShotCanvas({ experiment = false, initialSettings, initialShot, au
       phase = 'done'
       const all = count === targets.length
       if (experiment) {
-        const { angle, force } = lastShotRef.current || { angle: 0, force: 0 }
+        const { angle, force } = lastShotRef.current
         setScore(count * 100)
         setResult({ angle, force, boxesKnocked: count })
         setMessage(`${count} of ${targets.length} knocked`)
@@ -233,6 +237,7 @@ function VectorShotCanvas({ experiment = false, initialSettings, initialShot, au
       holdPos = { x: ANCHOR.x + dx, y: ANCHOR.y + dy }
       setShot(describePull(holdPos))
     }
+
     const onMouseUp = () => {
       if (!dragging) return
       dragging = false
@@ -265,6 +270,7 @@ function VectorShotCanvas({ experiment = false, initialSettings, initialShot, au
       }
     })
 
+    // Run / Run Again: replay the last shot with the current sliders
     if (((autoRun && round === 0) || pendingRunRef.current) && lastShotRef.current) {
       pendingRunRef.current = false
       fire(lastShotRef.current.angle, lastShotRef.current.force)
@@ -286,6 +292,7 @@ function VectorShotCanvas({ experiment = false, initialSettings, initialShot, au
       Engine.clear(engine)
       render.canvas.remove()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round, experiment])
 
   const handleTryAgain = () => {

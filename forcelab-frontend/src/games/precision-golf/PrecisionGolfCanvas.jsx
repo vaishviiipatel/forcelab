@@ -5,15 +5,15 @@ import GameShell from '../../components/GameShell'
 const WIDTH = 900
 const HEIGHT = 500
 const PX_PER_METER = 100
-const STEP_MS = 1000 / 60
+const STEP_MS = 1000 / 60 // Matter's base time step
 const BALL_R = 8
 const HOLE_R = 18
-const MAX_SPEED = 14
-const CAPTURE_SPEED = 5.5
-const FRICTION_K = 0.2
-const G_STEP = 0.2778
-const CHARGE_MS = 1500
-const MARGIN = 70
+const MAX_SPEED = 14 // ball speed at 100% strength (px per step)
+const CAPTURE_SPEED = 5.5 // faster than this and the ball rolls over the hole
+const FRICTION_K = 0.2 // Surface Friction 1.0 slows the ball by this much each step (px/step²)
+const G_STEP = 0.2778 // gravity as px per step²
+const CHARGE_MS = 1500 // time to charge from 0% to 100%
+const MARGIN = 70 // new holes stay this far from the edges
 const MAX_PLAY_SLOPE = 8
 const EXP_TEE = { x: 110, y: 250 }
 const EXP_HOLE = { x: 720, y: 250 }
@@ -28,6 +28,7 @@ const CONTROLS = [
   { key: 'slope', label: 'Ground Slope', min: 0, max: 10, step: 0.5 },
 ]
 
+// a random spot for the next hole, 220-650 px from where the ball is
 function pickHole(from) {
   for (let i = 0; i < 60; i++) {
     const angle = Math.random() * Math.PI * 2
@@ -48,24 +49,27 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
   const [toHole, setToHole] = useState(null)
   const [slopeShown, setSlopeShown] = useState(0)
   const [shotInfo, setShotInfo] = useState(null)
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState(null) // experiment: filled when the shot has finished
   const [message, setMessage] = useState(null)
 
+  // saved settings (if any) overwrite the defaults
   const [settings, setSettings] = useState({ ...DEFAULT_SETTINGS, ...initialSettings })
   const settingsRef = useRef(settings)
   const pendingRunRef = useRef(false)
   const launchSettingsRef = useRef(null)
 
+  // friction and slope are read from this ref every step, so sliders work instantly
   useEffect(() => {
     settingsRef.current = settings
   }, [settings])
 
+  // Build the world (re-runs whenever `round` changes)
   useEffect(() => {
     const { Engine, Render, Runner, Bodies, Body, Composite, Events } = Matter
 
     const engine = Engine.create()
     engine.gravity.x = 0
-    engine.gravity.y = 0
+    engine.gravity.y = 0 // top-down view: nothing pulls the ball "down"
 
     const render = Render.create({
       element: containerRef.current,
@@ -77,6 +81,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
     render.canvas.style.display = 'block'
     render.canvas.style.cursor = 'crosshair'
 
+    // four walls just outside the canvas edge
     const wallStyle = { isStatic: true, restitution: 0.6, render: { fillStyle: '#7d8489' } }
     const T = 20
     const IN = 6
@@ -90,6 +95,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
     const startBall = { ...EXP_TEE }
     let hole = experiment ? { ...EXP_HOLE } : pickHole(startBall)
 
+    // the hole is a sensor (nothing collides with it); it is added before the ball so the ball draws on top
     const holeBody = Bodies.circle(hole.x, hole.y, HOLE_R, {
       isStatic: true,
       isSensor: true,
@@ -105,14 +111,14 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
     })
     Composite.add(engine.world, [...walls, holeBody, ball])
 
-    let phase = 'aim'
-    let holdPos = { ...startBall }
+    let phase = 'aim' // aim -> rolling -> (holed | done)
+    let holdPos = { ...startBall } // where the ball sits while it is not rolling
     let strokesThisHole = 0
     let holesDoneLocal = 0
     let playSlope = 0
     let restSteps = 0
     let strokeStart = 0
-    let aimDir = 0
+    let aimDir = 0 // play mode: direction toward the mouse (degrees)
     let charging = false
     let chargeStart = 0
     let nextTimer = null
@@ -132,7 +138,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       phase = 'rolling'
       restSteps = 0
       strokeStart = engine.timing.timestamp
-      launchSettingsRef.current = { ...settingsRef.current }
+      launchSettingsRef.current = { ...settingsRef.current } // what this shot really used
       strokesThisHole++
       setStrokes(strokesThisHole)
       setMessage(null)
@@ -156,12 +162,13 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
         return
       }
 
-      const pts = Math.max(50, 500 - 150 * (strokesThisHole - 1))
+      const pts = Math.max(50, 500 - 150 * (strokesThisHole - 1)) // fewer strokes, more points
       holesDoneLocal++
       setScore((s) => s + pts)
       setHolesDone(holesDoneLocal)
       setMessage(`Holed in ${strokesThisHole}! +${pts}`)
 
+      // next hole: a new spot, and the slope grows
       nextTimer = setTimeout(() => {
         hole = pickHole(holdPos)
         Body.setPosition(holeBody, hole)
@@ -185,7 +192,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
         setResult({ distanceToHole: dist, holed: 'No' })
         setMessage(`Missed by ${dist} m`)
       } else {
-        phase = 'aim'
+        phase = 'aim' // play on from where the ball stopped
       }
     }
 
@@ -197,8 +204,10 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       }
       const k = scale()
       const s = (slopeNow() * Math.PI) / 180
+      // the slope pulls the ball downhill (down the screen)
       const vx = ball.velocity.x
       const vy = ball.velocity.y + G_STEP * Math.sin(s) * k
+      // rolling friction slows the ball (Matter has none of its own)
       const speed = Math.hypot(vx, vy)
       const decel = settingsRef.current.friction * FRICTION_K * Math.cos(s) * k
       const f = speed > 0 ? Math.max(0, speed - decel) / speed : 0
@@ -217,6 +226,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       if (restSteps > 30 || engine.timing.timestamp - strokeStart > 15000) stopped()
     })
 
+    // screen pixels -> game coordinates (works at any canvas size, including fullscreen)
     const toGame = (e) => {
       const rect = render.canvas.getBoundingClientRect()
       return {
@@ -224,14 +234,12 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
         y: (e.clientY - rect.top) * (HEIGHT / rect.height),
       }
     }
-
     const onMove = (e) => {
       if (experiment) return
       const m = toGame(e)
       const a = (Math.atan2(ball.position.y - m.y, m.x - ball.position.x) * 180) / Math.PI
       aimDir = (a + 360) % 360
     }
-
     const onDown = () => {
       if (phase !== 'aim') return
       if (experiment) {
@@ -241,13 +249,11 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
         chargeStart = performance.now()
       }
     }
-
     const onUp = () => {
       if (!charging) return
       charging = false
       strike(aimDir, Math.max(10, chargePct()))
     }
-
     render.canvas.addEventListener('mousemove', onMove)
     render.canvas.addEventListener('mousedown', onDown)
     window.addEventListener('mouseup', onUp)
@@ -256,6 +262,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       const ctx = render.context
       ctx.save()
 
+      // faint arrows show which way is downhill
       const sl = slopeNow()
       if (sl > 0) {
         ctx.strokeStyle = `rgba(255,255,255,${0.08 + sl * 0.012})`
@@ -276,6 +283,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
         ctx.fillText(`Slope ${sl}° (downhill = down)`, 16, 26)
       }
 
+      // flag
       ctx.strokeStyle = '#ffffff'
       ctx.lineWidth = 2
       ctx.beginPath()
@@ -290,6 +298,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       ctx.closePath()
       ctx.fill()
 
+      // aim line (and charge bar in play mode)
       if (phase === 'aim') {
         const dir = experiment ? settingsRef.current.direction : aimDir
         const pct = experiment ? settingsRef.current.strength : charging ? chargePct() : 0
@@ -313,6 +322,7 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       ctx.restore()
     })
 
+    // "Run" (or "Run Again" from the Journal): hit straight away with the slider values
     if ((autoRun && round === 0) || pendingRunRef.current) {
       pendingRunRef.current = false
       strike(settingsRef.current.direction, settingsRef.current.strength)
@@ -333,7 +343,8 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
       Engine.clear(engine)
       render.canvas.remove()
     }
-  }, [round, experiment, autoRun])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round, experiment])
 
   const handleTryAgain = () => {
     setResult(null)
@@ -356,7 +367,9 @@ function PrecisionGolfCanvas({ experiment = false, initialSettings, autoRun }) {
     handleTryAgain()
   }
 
-  const shown = shotInfo || { direction: settings.direction, strength: settings.strength }
+  // before a shot, experiment mode shows what the sliders are set to
+  const shown =
+    shotInfo || { direction: settings.direction, strength: settings.strength }
   const toHoleText = toHole !== null ? `${toHole} m` : '-'
 
   return (
