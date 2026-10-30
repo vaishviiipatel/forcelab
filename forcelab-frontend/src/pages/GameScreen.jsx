@@ -22,8 +22,9 @@ function GameScreen({ mode = 'play' }) {
   const isExperiment = mode === 'experiment'
   const { gameId } = useParams()
   const navigate = useNavigate()
-  const replay = useLocation().state || {} // settings passed from the Journal (Edit / Run Again)
-  const GameComponent = gameComponents[gameId]
+  const location = useLocation()
+  const replay = location.state || {}
+  const GameComponent = gameId ? gameComponents[gameId] : null
 
   return (
     <PageShell>
@@ -34,7 +35,7 @@ function GameScreen({ mode = 'play' }) {
         <span className="mx-2 text-gray-600">›</span>
         <button onClick={() => navigate('/games')} className="hover:text-white transition cursor-pointer">Games</button>
         <span className="mx-2 text-gray-600">›</span>
-        <button onClick={() => navigate(`/game/${gameId}`)} className="hover:text-white transition cursor-pointer">
+        <button onClick={() => navigate(`/game/${gameId || ''}`)} className="hover:text-white transition cursor-pointer">
           {gameTitle(gameId)}
         </button>
         <span className="mx-2 text-gray-600">›</span>
@@ -45,9 +46,9 @@ function GameScreen({ mode = 'play' }) {
         {GameComponent ? (
           <GameComponent
             experiment={isExperiment}
-            initialSettings={replay.settings}
-            initialShot={replay.shot}
-            autoRun={replay.autoRun}
+            initialSettings={replay.settings || null}
+            initialShot={replay.shot || null}
+            autoRun={!!replay.autoRun}
           />
         ) : (
           <p className="font-jetbrains text-gray-400">Coming soon.</p>
