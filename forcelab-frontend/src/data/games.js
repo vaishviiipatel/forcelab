@@ -70,3 +70,8 @@ export const LAB_GAMES_REGISTRY = [
 
 export const findGameById = (targetId) => LAB_GAMES_REGISTRY.find((item) => item.id === targetId)
 export const fetchGameName = (targetId) => findGameById(targetId)?.title ?? targetId
+
+// ALIAS MAPPINGS - Fixes missing export errors
+export const GAMES = LAB_GAMES_REGISTRY
+export const getGame = findGameById
+export const gameTitle = fetchGameName
