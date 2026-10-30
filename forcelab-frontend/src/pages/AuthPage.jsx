@@ -21,12 +21,53 @@ function AuthPage() {
     })
   }
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault()
-    setAlertMsg('Authentication backend is not connected yet.')
+    setIsSubmitting(true)
+    setAlertMsg('')
+
+    // Automatically hooks into Vercel settings or falls back to your active Render instance
+    const backendUrl = import.meta.env.VITE_API_URL || 'https://onrender.com'
+    const endpoint = isLoginScreen ? `${backendUrl}/api/login` : `${backendUrl}/api/signup`
+
+    const formData = isLoginScreen 
+      ? { email: clearanceData.email, password: clearanceData.password }
+      : { username: clearanceData.username, email: clearanceData.email, password: clearanceData.password }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Authentication process failed.')
+      }
+
+      if (isLoginScreen) {
+        // Secure access keys in browser session store
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        setAlertMsg('Access granted! Redirecting...')
+        setTimeout(() => routerNav('/'), 1200)
+      } else {
+        setAlertMsg('Profile initialized successfully! Switching to access terminal...')
+        setTimeout(() => {
+          setIsLoginScreen(true)
+          setAlertMsg('')
+        }, 1800)
+      }
+    } catch (error) {
+      setAlertMsg(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
- return (
+  return (
     <div className="relative min-h-screen bg-[#020b16] text-white flex items-center justify-center p-6 overflow-hidden font-rajdhani">
       <div 
         className="absolute w-[500px] h-[500px] rounded-full opacity-10 blur-3xl pointer-events-none"
@@ -108,4 +149,5 @@ function AuthPage() {
     </div>
   )
 }
+
 export default AuthPage
