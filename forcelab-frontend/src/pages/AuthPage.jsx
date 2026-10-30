@@ -27,7 +27,7 @@ function AuthPage() {
     setAlertMsg('')
 
     // Automatically hooks into Vercel settings or falls back to your active Render instance
-    const backendUrl = import.meta.env.VITE_API_URL || 'https://onrender.com'
+    const backendUrl = import.meta.env.VITE_API_URL || 'https://forcelab-79sc.onrender.com/'
     const endpoint = isLoginScreen ? `${backendUrl}/api/login` : `${backendUrl}/api/signup`
 
     const formData = isLoginScreen 
