@@ -12,7 +12,7 @@ const CRANE_Y = 50
 const CRANE_RANGE = 300
 const DROP_COOLDOWN = 600
 const AUTO_GAP = 1100
-const AUTO_OFFSETS = [0, 14, -12, 20, -16, 10, -8, 18, -14, 12] // experiment: same 10 drops every Run
+const AUTO_OFFSETS = [0, 14, -12, 20, -16, 10, -8, 18, -14, 12]
 const PX_PER_METER = 50
 const COLORS = ['#5adfff', '#f5a623', '#7ee787', '#c58bff', '#ff7b9c']
 
@@ -43,7 +43,6 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
   const launchSettingsRef = useRef(null)
   const streakRef = useRef(0)
 
-  // slider changes update the running physics (declared BEFORE the world effect)
   useEffect(() => {
     settingsRef.current = settings
     const { engine, platform, dropped } = worldRef.current
@@ -62,7 +61,6 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
   useEffect(() => {
     const { Engine, Render, Runner, Bodies, Composite, Events } = Matter
 
-    // Play: more blocks, a smaller platform and a faster swing as your streak grows
     const level = experiment ? 0 : streakRef.current
     const goalN = experiment ? AUTO_OFFSETS.length : Math.min(10, 4 + level)
     const platW = experiment ? 240 : Math.max(150, 240 - level * 15)
@@ -102,7 +100,7 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
     const landed = new Set()
     worldRef.current = { engine, platform, dropped }
 
-    let phase = experiment ? 'ready' : 'running' // ready -> running -> done
+    let phase = experiment ? 'ready' : 'running'
     let craneX = WIDTH / 2
     let lastDrop = -5000
     let drops = 0
@@ -170,7 +168,6 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
       }
     })
 
-    // a block "lands" the first time it touches the platform or a landed block
     Events.on(engine, 'collisionStart', (e) => {
       if (phase !== 'running') return
       e.pairs.forEach(({ bodyA, bodyB }) => {
@@ -215,7 +212,6 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
         return
       }
 
-      // done once every block is dropped, landed, and still
       if (drops < goalN || landed.size < dropped.length) {
         settle = 0
         return
@@ -237,7 +233,6 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
       dropAt(craneX)
     }
     render.canvas.addEventListener('mousedown', onClick)
-
     Events.on(render, 'afterRender', () => {
       const ctx = render.context
       ctx.save()
@@ -245,17 +240,16 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
         ctx.setLineDash([6, 6])
         ctx.lineWidth = 2
         ctx.strokeStyle = 'rgba(255,255,255,0.6)'
-        ctx.strokeRect(craneX - BLOCK_W / 2, CRANE_Y - BLOCK_H / 2, BLOCK_W, BLOCK_H)
         ctx.beginPath()
-        ctx.moveTo(craneX, CRANE_Y + BLOCK_H / 2)
-        ctx.lineTo(craneX, PLATFORM_TOP)
-        ctx.strokeStyle = 'rgba(255,255,255,0.15)'
+        ctx.moveTo(craneX, CRANE_Y)
+        ctx.lineTo(craneX, HEIGHT)
         ctx.stroke()
       }
-      if (experiment && phase === 'ready') {
-        ctx.fillStyle = 'rgba(255,255,255,0.8)'
-        ctx.font = '14px monospace'
-        ctx.fillText('Press Run', WIDTH / 2 - 36, 60)
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(craneX - 4, CRANE_Y - 4, 8, 8)
+      if (phase === 'running' && drops < goalN && !auto) {
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'
+        ctx.fillRect(craneX - BLOCK_W / 2, CRANE_Y - BLOCK_H / 2, BLOCK_W, BLOCK_H)
       }
       ctx.restore()
     })
@@ -279,7 +273,6 @@ function SkyStackCanvas({ experiment = false, initialSettings, autoRun }) {
       Engine.clear(engine)
       render.canvas.remove()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round, experiment])
 
   const handleTryAgain = () => {
