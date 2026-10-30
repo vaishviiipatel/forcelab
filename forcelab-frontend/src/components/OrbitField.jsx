@@ -1,3 +1,42 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+const generateSystemOrbits = () => {
+  return [
+    {
+      horizontalRadius: 180,
+      flatnessRatio: 0.45,
+      rotationAngle: 0.2,
+      rotationVelocity: 0.002,
+      orbitalSpeed: 0.08,
+      satellites: [
+        { offsetAngle: 0, diameter: 2, hue: '14, 165, 233', opacity: 0.6, isMajorNode: false },
+        { offsetAngle: 2.5, diameter: 4, hue: '14, 165, 233', opacity: 0.8, isMajorNode: true }
+      ]
+    },
+    {
+      horizontalRadius: 320,
+      flatnessRatio: 0.4,
+      rotationAngle: -0.4,
+      rotationVelocity: -0.001,
+      orbitalSpeed: 0.04,
+      satellites: [
+        { offsetAngle: 1.2, diameter: 3, hue: '99, 102, 241', opacity: 0.7, isMajorNode: false },
+        { offsetAngle: 4.8, diameter: 2, hue: '99, 102, 241', opacity: 0.5, isMajorNode: false }
+      ]
+    },
+    {
+      horizontalRadius: 480,
+      flatnessRatio: 0.35,
+      rotationAngle: 0.6,
+      rotationVelocity: 0.003,
+      orbitalSpeed: 0.02,
+      satellites: [
+        { offsetAngle: 3.1, diameter: 5, hue: '236, 72, 153', opacity: 0.9, isMajorNode: true }
+      ]
+    }
+  ];
+};
+
 function OrbitField() {
   const displayCanvasRef = useRef(null)
 
@@ -106,4 +145,4 @@ function OrbitField() {
   return <canvas ref={displayCanvasRef} className="absolute inset-0 block w-full h-full pointer-events-none" />
 }
 
-export default OrbitField
+export default OrbitField;
